@@ -1,0 +1,248 @@
+<html>
+    <head>
+        <title>Cat Games</title>
+        <style>
+        body {
+        margin:0px;
+        padding:0px;
+        }
+
+        #board {
+        width:50%;
+        height:70%;
+        margin: 10px;
+        margin-left:auto;
+        margin-right:auto;
+        position:relative;
+        background:#222831;
+        border:2px solid #E5D9B6;
+        }
+
+        #mouse {
+        position:absolute;
+        background-color:#D988B9;
+        border:2px solid #FACBEA;
+        box-sizing:border-box;
+        text-align:center;
+        }
+
+        #tomcat {
+        position:absolute;
+        background-color:#618264;
+        border:2px solid #79AC78;
+        box-sizing:border-box;
+        text-align:center;
+        }
+
+        #bobcat {
+        position:absolute;
+        background-color:#8EACCD;
+        border:2px solid #D2E0FB;
+        box-sizing:border-box;
+        text-align:center;
+        }        
+        </style>
+    </head>
+    <body>
+        <div id="board">
+            <div id="mouse">J</div>
+            <div id="tomcat">T</div>
+            <div id="bobcat">B</div>
+            <div style="color: white;margin: 5px;">
+                <div>Bob Cat Score :<span id="bobcatscore">0</span></div>
+                <div>Tom Cat Score :<span id="tomcatscore">0</span></div>
+            </div>
+        </div>
+    </body>
+    <script>
+    var boardObj;
+    var mouseObj;
+    var tomCatObj;
+    var bobCatObj;
+
+    var boardLeft;
+    var boardTop;
+    var mouseLeft;
+    var mouseTop;
+    var catLeft;
+    var catTop;
+
+    var catList = [];
+    var catCount = 0;
+
+    var bobcatscore = 0;
+    var tomcatscore = 0;
+    
+    var validation;
+    var leftPosition = 0;
+    var topPosition = 0;
+
+    var temp;
+    var count;
+    var blockSize = 30;
+
+    function load() {
+        boardObj = document.getElementById("board");
+        mouseObj = document.getElementById("mouse");
+        tomCatObj = document.getElementById("tomcat");
+        catList.push(tomCatObj);
+        bobCatObj = document.getElementById("bobcat");
+        catList.push(bobCatObj);
+
+        catCount = catList.length;
+
+        boardLeft = boardObj.offsetWidth;
+        temp = boardLeft%blockSize;
+        if(temp != 0) {
+            boardLeft = boardLeft - temp;
+        }
+
+        boardTop = boardObj.offsetHeight;
+        temp = boardTop%blockSize;
+        if(temp != 0) {
+            boardTop = boardTop - temp;
+        }
+
+        boardObj.style.width = boardLeft+"px";
+	    boardObj.style.height = boardTop+"px";
+
+        mouseObj.style.width = blockSize+"px";
+	    mouseObj.style.height = blockSize+"px";
+        
+        for(count = 0;count < catCount;count++) {
+            catList[count].style.width = blockSize+"px";
+            catList[count].style.height = blockSize+"px";
+            position();
+            catList[count].style.left = leftPosition+"px";
+            catList[count].style.top = topPosition+"px";
+        }
+
+        mouse();
+    }
+
+    function position() {
+        while(1) {
+            validation = true;
+            leftPosition = Math.floor(Math.random() * (boardLeft - 1));
+            temp = leftPosition%blockSize;
+            if(temp != 0) {
+                leftPosition = leftPosition - temp;
+            }
+
+            topPosition = Math.floor(Math.random() * (boardTop - 1));
+            temp = topPosition%blockSize;
+            if(temp != 0) {
+                topPosition = topPosition - temp;
+            } 
+
+            if(mouseObj.style.left == leftPosition+"px" && mouseObj.style.top == topPosition+"px") {
+                validation = false;
+            }
+
+            for(temp = 0;temp < catCount;temp++) {
+                if(catList[temp].style.left == leftPosition+"px" && catList[temp].style.top == topPosition+"px") {
+                    validation = false;
+                }
+            }
+
+            if(validation == true) {
+                break;
+            }
+        }
+    }
+
+    function mouse() {
+        position();
+        mouseLeft = leftPosition;
+        mouseTop = topPosition;
+        mouseObj.style.left = mouseLeft+"px";
+	    mouseObj.style.top = mouseTop+"px";
+        
+        var temp;
+        for(temp = 0;temp < catCount;temp++) {
+            position();
+            catList[temp].style.left = leftPosition+"px";
+            catList[temp].style.top = topPosition+"px";
+        }
+    }
+
+    function eat() {
+        catList[count].style.left = mouseLeft+"px";
+	    catList[count].style.top = mouseTop+"px";
+        if(tomCatObj == catList[count]) {
+            tomcatscore++;
+            document.getElementById("tomcatscore").innerHTML = tomcatscore;
+            if(count == 0) {
+                catList[0] = bobCatObj;
+                catList[1] = tomCatObj;
+            }
+        }
+        else if(bobCatObj == catList[count]) {
+            bobcatscore++;
+            document.getElementById("bobcatscore").innerHTML = bobcatscore;
+            if(count == 0) {
+                catList[0] = tomCatObj;
+                catList[1] = bobCatObj;
+            }
+        }
+        mouse();
+    }
+
+    function follow() {
+        catList[count].style.left = catLeft+"px";
+	    catList[count].style.top = catTop+"px";
+    }
+
+    function run() {
+        for(count = 0;count < catCount;count++) {
+            catTop = catList[count].style.top;
+            catTop = catTop.replace("px","");
+            catTop = parseInt(catTop);
+
+            catLeft = catList[count].style.left;
+            catLeft = catLeft.replace("px","");
+            catLeft = parseInt(catLeft);
+
+            if(catTop == mouseTop || catLeft < mouseLeft || catLeft > mouseLeft) {
+                if(catLeft < mouseLeft) {   
+                    catLeft = catLeft + blockSize;  
+                }
+                else
+                {   
+                    catLeft = catLeft - blockSize;  
+                }
+
+                if(catTop == mouseTop && catLeft == mouseLeft) {   
+                    eat();
+                    break;  
+                }
+                else
+                {   
+                    follow();   
+                }
+            }
+            else if(catLeft == mouseLeft || catTop < mouseTop || catTop > mouseTop) {
+                if(catTop < mouseTop) {   
+                    catTop = catTop + blockSize;    
+                }
+                else
+                {   
+                    catTop = catTop - blockSize;    
+                }
+
+                if(catTop == mouseTop && catLeft == mouseLeft) {   
+                    eat();  
+                    break;
+                }
+                else
+                {   
+                    follow();   
+                }
+            }
+        }
+    }
+
+    load();
+    var runObj = setInterval(run,100);
+    </script>
+</html>
